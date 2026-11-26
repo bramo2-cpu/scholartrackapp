@@ -28,7 +28,7 @@ class AppContainer(context: Context) {
 
     companion object {
         // TODO: replace with your own GitHub raw URL. Must end with "/".
-        const val BASE_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/"
+        const val BASE_URL = "https://raw.githubusercontent.com/bramo2-cpu/scholartrackapp/main/"
     }
 }
 
