@@ -3,7 +3,6 @@ package com.scholartrackapp.data.remote
 import retrofit2.http.GET
 import retrofit2.http.Headers
 
-/** Fields are nullable because Gson ignores Kotlin null-safety if the JSON is missing a field. */
 data class ScholarshipDto(
     val id: Int?,
     val name: String?,
@@ -11,7 +10,11 @@ data class ScholarshipDto(
     val description: String?,
     val amount: String?,
     val deadline: String?,
-    val link: String?
+    val link: String?,
+    val location: String?,
+    val minAge: Int?,
+    val maxAge: Int?,
+    val level: String?
 )
 
 interface ApiService {

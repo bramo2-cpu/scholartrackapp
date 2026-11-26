@@ -61,7 +61,6 @@ class ScholarshipRepository(
 
     suspend fun getCurrentUser(): UserEntity? = _currentUserId.value?.let { userDao.getById(it) }
 
-    /** API -> DTO -> Entity -> Room. The UI observes Room, so it updates automatically. */
     suspend fun refreshScholarships(): Result<Unit> = try {
         val remote = api.getScholarships()
         scholarshipDao.replaceAll(remote.mapNotNull { it.toEntity() })
@@ -76,7 +75,6 @@ class ScholarshipRepository(
     suspend fun getApplication(id: Int) = applicationDao.getById(id)
     suspend fun getActiveApplications() = applicationDao.getActive()
 
-    /** Returns false if an application with the same title already exists for this user. */
     suspend fun addApplication(app: ApplicationEntity): Boolean {
         val uid = _currentUserId.value ?: return false
         if (applicationDao.countByTitle(uid, app.title, 0) > 0) return false
@@ -103,6 +101,10 @@ private fun ScholarshipDto.toEntity(): ScholarshipEntity? {
         description = description ?: "",
         amount = amount ?: "Not specified",
         deadline = deadline ?: "",
-        link = link ?: ""
+        link = link ?: "",
+        location = location ?: "Global",
+        minAge = minAge ?: 15,
+        maxAge = maxAge ?: 99,
+        level = level ?: "All"
     )
 }

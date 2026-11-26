@@ -15,7 +15,6 @@ data class UserEntity(
     val password: String
 )
 
-/** Cached copy of scholarships fetched from the API (lets the app work offline). */
 @Entity(tableName = "scholarships")
 data class ScholarshipEntity(
     @PrimaryKey val id: Int,
@@ -23,19 +22,22 @@ data class ScholarshipEntity(
     val provider: String,
     val description: String,
     val amount: String,
-    val deadline: String,   // yyyy-MM-dd
-    val link: String
+    val deadline: String,
+    val link: String,
+    val location: String = "Global",
+    val minAge: Int = 15,
+    val maxAge: Int = 99,
+    val level: String = "All"
 )
 
-/** An application the student is tracking. Created/edited by the user. */
 @Entity(tableName = "applications")
 data class ApplicationEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userId: Int = 0,
     val title: String,
     val provider: String,
-    val deadline: String,   // yyyy-MM-dd
-    val status: String,     // ApplicationStatus.name
+    val deadline: String,
+    val status: String,
     val notes: String,
     val scholarshipId: Int? = null
 )

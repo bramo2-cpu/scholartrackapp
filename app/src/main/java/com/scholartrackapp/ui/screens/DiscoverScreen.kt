@@ -1,9 +1,12 @@
 package com.scholartrackapp.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Refresh
@@ -12,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,9 +32,12 @@ fun DiscoverScreen(
     vm: DiscoverViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val list by vm.scholarships.collectAsStateWithLifecycle()
-    val query by vm.query.collectAsStateWithLifecycle()
+    val filters by vm.filters.collectAsStateWithLifecycle()
     val refreshing by vm.refreshing.collectAsStateWithLifecycle()
     val error by vm.error.collectAsStateWithLifecycle()
+
+    val locations = listOf("All", "Kenya", "Africa", "UK", "USA", "Global")
+    val levels = listOf("All", "High School", "Undergraduate", "Postgraduate")
 
     Scaffold(
         topBar = {
@@ -38,28 +45,82 @@ fun DiscoverScreen(
                 title = { Text("Discover scholarships") },
                 actions = {
                     IconButton(onClick = vm::refresh, enabled = !refreshing) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh from web")
+                        Icon(Icons.Default.Refresh, contentDescription = "Sync from web")
                     }
                 }
             )
         }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = vm::onQueryChange,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Search by name, provider or keyword") },
-                leadingIcon = { Icon(Icons.Default.Search, null) },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = { vm.onQueryChange("") }) {
-                            Icon(Icons.Default.Clear, "Clear search")
+            // Search + Age Filter Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = filters.query,
+                    onValueChange = vm::onQueryChange,
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Search name, keyword...") },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
+                    trailingIcon = {
+                        if (filters.query.isNotEmpty()) {
+                            IconButton(onClick = { vm.onQueryChange("") }) {
+                                Icon(Icons.Default.Clear, "Clear search")
+                            }
                         }
-                    }
-                },
-                singleLine = true
-            )
+                    },
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = filters.ageInput,
+                    onValueChange = vm::onAgeChange,
+                    modifier = Modifier.width(88.dp),
+                    label = { Text("Age") },
+                    placeholder = { Text("e.g. 20") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
+            }
+
+            // Location Filter Chips
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                locations.forEach { loc ->
+                    FilterChip(
+                        selected = filters.location == loc,
+                        onClick = { vm.onLocationChange(loc) },
+                        label = { Text(if (loc == "All") "All Locations" else loc) }
+                    )
+                }
+            }
+
+            // Education Level Filter Chips
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                levels.forEach { lvl ->
+                    FilterChip(
+                        selected = filters.level == lvl,
+                        onClick = { vm.onLevelChange(lvl) },
+                        label = { Text(if (lvl == "All") "All Levels" else lvl) }
+                    )
+                }
+            }
+
             if (refreshing) LinearProgressIndicator(Modifier.fillMaxWidth())
 
             when {
@@ -70,11 +131,14 @@ fun DiscoverScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        error ?: "No scholarships to show.",
+                        error ?: "No scholarships match your current filters.",
                         textAlign = TextAlign.Center
                     )
                     Spacer(Modifier.height(12.dp))
-                    Button(onClick = vm::refresh) { Text("Retry") }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedButton(onClick = vm::clearFilters) { Text("Reset Filters") }
+                        Button(onClick = vm::refresh) { Text("Sync Web") }
+                    }
                 }
                 else -> LazyColumn(
                     contentPadding = PaddingValues(16.dp),
@@ -90,14 +154,24 @@ fun DiscoverScreen(
 @Composable
 private fun ScholarshipCard(s: ScholarshipEntity, onClick: () -> Unit) {
     Card(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(s.name, style = MaterialTheme.typography.titleMedium)
-            Text(s.provider, style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(4.dp))
+            Text(
+                s.provider,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AssistChip(onClick = {}, label = { Text(s.location) })
+                AssistChip(onClick = {}, label = { Text(s.level) })
+                AssistChip(onClick = {}, label = { Text("Ages ${s.minAge}-${s.maxAge}") })
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(s.amount, style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary)
+                Text(
+                    s.amount,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Text(deadlineLabel(s.deadline), style = MaterialTheme.typography.labelMedium)
             }
         }
