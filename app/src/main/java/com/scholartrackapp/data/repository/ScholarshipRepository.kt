@@ -103,6 +103,13 @@ class ScholarshipRepository(
     }
 
     suspend fun deleteApplication(app: ApplicationEntity) = applicationDao.delete(app)
+
+    suspend fun checkForAppUpdate(currentVersionCode: Int): com.scholartrackapp.data.remote.AppVersionDto? = try {
+        val latest = api.getLatestVersion()
+        if ((latest.versionCode ?: 0) > currentVersionCode) latest else null
+    } catch (_: Exception) {
+        null
+    }
 }
 
 private fun ScholarshipDto.toEntity(): ScholarshipEntity? {

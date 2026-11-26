@@ -18,6 +18,13 @@ data class ScholarshipDto(
     val level: String?
 )
 
+data class AppVersionDto(
+    val versionCode: Int?,
+    val versionName: String?,
+    val notes: String?,
+    val apkUrl: String?
+)
+
 interface ApiService {
     @Headers(
         "Accept: application/vnd.github.raw+json",
@@ -25,4 +32,11 @@ interface ApiService {
     )
     @GET("repos/bramo2-cpu/scholartrackapp/contents/scholarships.json")
     suspend fun getScholarships(): List<ScholarshipDto>
+
+    @Headers(
+        "Accept: application/vnd.github.raw+json",
+        "Cache-Control: no-cache"
+    )
+    @GET("repos/bramo2-cpu/scholartrackapp/contents/version.json")
+    suspend fun getLatestVersion(): AppVersionDto
 }

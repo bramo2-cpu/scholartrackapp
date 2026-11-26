@@ -1,18 +1,17 @@
 package com.scholartrackapp.ui
 
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -23,6 +22,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.scholartrackapp.ScholarTrackApp
+import com.scholartrackapp.data.remote.AppVersionDto
 import com.scholartrackapp.ui.screens.*
 
 object Routes {
@@ -44,8 +44,52 @@ fun ScholarTrackNav() {
     val route = entry?.destination?.route
     val showBottomBar = route == Routes.DISCOVER || route == Routes.APPLICATIONS
 
-    val app = LocalContext.current.applicationContext as ScholarTrackApp
+    val context = LocalContext.current
+    val app = context.applicationContext as ScholarTrackApp
     val startDest = if (app.container.repository.currentUserId.value != null) Routes.DISCOVER else Routes.AUTH
+
+    var availableUpdate by remember { mutableStateOf<AppVersionDto?>(null) }
+
+    LaunchedEffect(Unit) {
+        val currentCode = try {
+            val info = context.packageManager.getPackageInfo(context.packageName, 0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) info.longVersionCode.toInt()
+            else @Suppress("DEPRECATION") info.versionCode
+        } catch (_: PackageManager.NameNotFoundException) {
+            1
+        }
+        availableUpdate = app.container.repository.checkForAppUpdate(currentCode)
+    }
+
+    availableUpdate?.let { update ->
+        AlertDialog(
+            onDismissRequest = { availableUpdate = null },
+            title = { Text("App Update Available (v${update.versionName ?: "New"})") },
+            text = {
+                Text(
+                    update.notes?.takeIf { it.isNotBlank() }
+                        ?: "A newer version of ScholarTrack is ready from your laptop build. Tap Update Now to download and install it."
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val url = update.apkUrl ?: "https://github.com/bramo2-cpu/scholartrackapp/raw/main/releases/ScholarTrack-latest.apk"
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                    availableUpdate = null
+                }) {
+                    Text("Update Now")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { availableUpdate = null }) {
+                    Text("Later")
+                }
+            }
+        )
+    }
 
     Scaffold(bottomBar = {
         if (showBottomBar) {
