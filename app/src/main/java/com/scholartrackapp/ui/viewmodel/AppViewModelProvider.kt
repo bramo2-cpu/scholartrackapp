@@ -9,6 +9,7 @@ import com.scholartrackapp.ScholarTrackApp
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
+        initializer { AuthViewModel(app().container.repository) }
         initializer { DiscoverViewModel(app().container.repository) }
         initializer { ApplicationsViewModel(app().container.repository) }
         initializer { ScholarshipDetailViewModel(createSavedStateHandle(), app().container.repository) }
@@ -17,4 +18,3 @@ object AppViewModelProvider {
 }
 
 private fun CreationExtras.app(): ScholarTrackApp = this[APPLICATION_KEY] as ScholarTrackApp
-

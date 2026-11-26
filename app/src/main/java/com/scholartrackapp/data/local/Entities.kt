@@ -1,7 +1,19 @@
 package com.scholartrackapp.data.local
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "users",
+    indices = [Index(value = ["email"], unique = true)]
+)
+data class UserEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val fullName: String,
+    val email: String,
+    val password: String
+)
 
 /** Cached copy of scholarships fetched from the API (lets the app work offline). */
 @Entity(tableName = "scholarships")
@@ -19,6 +31,7 @@ data class ScholarshipEntity(
 @Entity(tableName = "applications")
 data class ApplicationEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val userId: Int = 0,
     val title: String,
     val provider: String,
     val deadline: String,   // yyyy-MM-dd
@@ -34,4 +47,3 @@ enum class ApplicationStatus(val label: String) {
     AWARDED("Awarded"),
     REJECTED("Rejected")
 }
-
