@@ -1,0 +1,5 @@
+[
+  {"id":1,"name":"Sample Merit Bursary","provider":"Example Foundation","description":"Covers tuition for high-performing students from low-income households. Replace with a verified scholarship.","amount":"KES 100,000 per year","deadline":"2027-01-31","link":"https://example.com/merit-bursary"},
+  {"id":2,"name":"Sample STEM Scholarship","provider":"Example Tech Trust","description":"Support for students in science, technology, engineering and maths programmes.","amount":"Full tuition","deadline":"2027-03-15","link":"https://example.com/stem"},
+  {"id":3,"name":"Sample Girls in Education Grant","provider":"Example Education Fund","description":"Grant for girls transitioning to secondary or tertiary education.","amount":"KES 50,000","deadline":"2027-02-28","link":"https://example.com/girls-grant"}
+]

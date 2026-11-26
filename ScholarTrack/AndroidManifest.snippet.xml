@@ -1,0 +1,8 @@
+<!-- Put these two permissions above <application> -->
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+<!-- Add android:name to the existing <application> tag -->
+<application
+    android:name=".ScholarTrackApp"
+    ... keep the rest of the template attributes ... >
