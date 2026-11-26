@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 
 data class DiscoverFilters(
     val query: String = "",
+    val category: String = "All",
     val location: String = "All",
     val ageInput: String = "",
     val level: String = "All"
@@ -35,7 +36,11 @@ class DiscoverViewModel(private val repo: ScholarshipRepository) : ViewModel() {
                     s.name.lowercase().contains(q) ||
                     s.provider.lowercase().contains(q) ||
                     s.description.lowercase().contains(q) ||
-                    s.location.lowercase().contains(q)
+                    s.location.lowercase().contains(q) ||
+                    s.category.lowercase().contains(q)
+
+                val matchesCategory = f.category == "All" ||
+                    s.category.equals(f.category, ignoreCase = true)
 
                 val matchesLocation = f.location == "All" ||
                     s.location.equals(f.location, ignoreCase = true) ||
@@ -47,7 +52,7 @@ class DiscoverViewModel(private val repo: ScholarshipRepository) : ViewModel() {
                     s.level.equals("All", ignoreCase = true) ||
                     s.level.contains(f.level, ignoreCase = true)
 
-                matchesQuery && matchesLocation && matchesAge && matchesLevel
+                matchesQuery && matchesCategory && matchesLocation && matchesAge && matchesLevel
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -56,6 +61,7 @@ class DiscoverViewModel(private val repo: ScholarshipRepository) : ViewModel() {
     }
 
     fun onQueryChange(v: String) = _filters.update { it.copy(query = v) }
+    fun onCategoryChange(v: String) = _filters.update { it.copy(category = v) }
     fun onLocationChange(v: String) = _filters.update { it.copy(location = v) }
     fun onAgeChange(v: String) = _filters.update { it.copy(ageInput = v.filter { ch -> ch.isDigit() }.take(2)) }
     fun onLevelChange(v: String) = _filters.update { it.copy(level = v) }
@@ -68,7 +74,7 @@ class DiscoverViewModel(private val repo: ScholarshipRepository) : ViewModel() {
             val result = repo.refreshScholarships()
             _refreshing.value = false
             result.onFailure {
-                _error.value = "Could not reach web feed. Showing cached scholarships."
+                _error.value = "Could not reach web feed. Showing cached opportunities."
             }
         }
     }

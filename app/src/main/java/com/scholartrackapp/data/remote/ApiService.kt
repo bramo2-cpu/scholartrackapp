@@ -7,6 +7,7 @@ data class ScholarshipDto(
     val id: Int?,
     val name: String?,
     val provider: String?,
+    val category: String?,
     val description: String?,
     val amount: String?,
     val deadline: String?,

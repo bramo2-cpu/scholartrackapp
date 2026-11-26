@@ -7,9 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,52 +22,112 @@ fun ApplicationFormScreen(
     onBack: () -> Unit,
     vm: ApplicationFormViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val s by vm.state.collectAsStateWithLifecycle()
+    val state by vm.state.collectAsStateWithLifecycle()
+    val categories = listOf("Scholarship", "Bursary", "Internship", "Attachment")
 
-    LaunchedEffect(s.saved) { if (s.saved) onBack() }
+    LaunchedEffect(state.saved) {
+        if (state.saved) onBack()
+    }
 
-    Scaffold(topBar = {
-        TopAppBar(
-            title = { Text(if (s.isEdit) "Edit application" else "New application") },
-            navigationIcon = {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-            }
-        )
-    }) { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(if (state.isEdit) "Edit application" else "Track opportunity") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { padding ->
         Column(
-            Modifier.padding(padding).padding(16.dp).verticalScroll(rememberScrollState()),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Text("Opportunity Type", style = MaterialTheme.typography.labelLarge)
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categories.forEach { cat ->
+                    FilterChip(
+                        selected = state.category == cat,
+                        onClick = { vm.onCategoryChange(cat) },
+                        label = { Text(cat) }
+                    )
+                }
+            }
+
             OutlinedTextField(
-                value = s.title, onValueChange = vm::onTitleChange,
-                label = { Text("Scholarship / application title") },
-                isError = s.titleError != null,
-                supportingText = { s.titleError?.let { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = s.provider, onValueChange = vm::onProviderChange,
-                label = { Text("Provider") },
-                isError = s.providerError != null,
-                supportingText = { s.providerError?.let { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = s.deadline, onValueChange = vm::onDeadlineChange,
-                label = { Text("Deadline (yyyy-MM-dd)") },
-                isError = s.deadlineError != null,
-                supportingText = { s.deadlineError?.let { Text(it) } },
+                value = state.title,
+                onValueChange = vm::onTitleChange,
+                label = { Text("Opportunity Title *") },
+                isError = state.titleError != null,
+                supportingText = state.titleError?.let { { Text(it) } },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Status", style = MaterialTheme.typography.labelLarge)
+            OutlinedTextField(
+                value = state.provider,
+                onValueChange = vm::onProviderChange,
+                label = { Text("Company / Sponsor / Provider *") },
+                isError = state.providerError != null,
+                supportingText = state.providerError?.let { { Text(it) } },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = state.school,
+                onValueChange = vm::onSchoolChange,
+                label = { Text("Your School / University *") },
+                placeholder = { Text("e.g. Kenyatta University / Strathmore") },
+                isError = state.schoolError != null,
+                supportingText = state.schoolError?.let { { Text(it) } },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = state.course,
+                onValueChange = vm::onCourseChange,
+                label = { Text("Your Course / Program *") },
+                placeholder = { Text("e.g. BSc. Software Engineering") },
+                isError = state.courseError != null,
+                supportingText = state.courseError?.let { { Text(it) } },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = state.requirements,
+                onValueChange = vm::onRequirementsChange,
+                label = { Text("Required Documents & Checklist") },
+                placeholder = { Text("e.g. School Intro Letter, CV, Transcripts, National ID") },
+                minLines = 2,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = state.deadline,
+                onValueChange = vm::onDeadlineChange,
+                label = { Text("Deadline (yyyy-MM-dd) *") },
+                placeholder = { Text("2027-03-31") },
+                isError = state.deadlineError != null,
+                supportingText = state.deadlineError?.let { { Text(it) } },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Text("Application Status", style = MaterialTheme.typography.labelLarge)
             Row(
-                Modifier.horizontalScroll(rememberScrollState()),
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ApplicationStatus.entries.forEach { st ->
                     FilterChip(
-                        selected = s.status == st,
+                        selected = state.status == st,
                         onClick = { vm.onStatusChange(st) },
                         label = { Text(st.label) }
                     )
@@ -77,18 +135,23 @@ fun ApplicationFormScreen(
             }
 
             OutlinedTextField(
-                value = s.notes, onValueChange = vm::onNotesChange,
-                label = { Text("Notes (documents needed, contacts...)") },
-                minLines = 3,
+                value = state.notes,
+                onValueChange = vm::onNotesChange,
+                label = { Text("Additional Notes / Portal Login / Ref No.") },
+                minLines = 2,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            s.formError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            if (state.formError != null) {
+                Text(state.formError!!, color = MaterialTheme.colorScheme.error)
+            }
 
-            Button(onClick = vm::save, modifier = Modifier.fillMaxWidth()) {
-                Text(if (s.isEdit) "Save changes" else "Add application")
+            Button(
+                onClick = vm::save,
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            ) {
+                Text(if (state.isEdit) "Update Application" else "Save Application")
             }
         }
     }
 }
-

@@ -36,13 +36,14 @@ fun DiscoverScreen(
     val refreshing by vm.refreshing.collectAsStateWithLifecycle()
     val error by vm.error.collectAsStateWithLifecycle()
 
+    val categories = listOf("All", "Scholarship", "Bursary", "Internship", "Attachment")
     val locations = listOf("All", "Kenya", "Africa", "UK", "USA", "Global")
     val levels = listOf("All", "High School", "Undergraduate", "Postgraduate")
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Discover scholarships") },
+                title = { Text("Discover Opportunities") },
                 actions = {
                     IconButton(onClick = vm::refresh, enabled = !refreshing) {
                         Icon(Icons.Default.Refresh, contentDescription = "Sync from web")
@@ -52,11 +53,10 @@ fun DiscoverScreen(
         }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            // Search + Age Filter Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -64,7 +64,7 @@ fun DiscoverScreen(
                     value = filters.query,
                     onValueChange = vm::onQueryChange,
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Search name, keyword...") },
+                    placeholder = { Text("Search scholarships, attachments...") },
                     leadingIcon = { Icon(Icons.Default.Search, null) },
                     trailingIcon = {
                         if (filters.query.isNotEmpty()) {
@@ -79,12 +79,29 @@ fun DiscoverScreen(
                 OutlinedTextField(
                     value = filters.ageInput,
                     onValueChange = vm::onAgeChange,
-                    modifier = Modifier.width(88.dp),
+                    modifier = Modifier.width(84.dp),
                     label = { Text("Age") },
-                    placeholder = { Text("e.g. 20") },
+                    placeholder = { Text("21") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true
                 )
+            }
+
+            // Category Filter Chips (Scholarships, Bursaries, Internships, Attachments)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categories.forEach { cat ->
+                    FilterChip(
+                        selected = filters.category == cat,
+                        onClick = { vm.onCategoryChange(cat) },
+                        label = { Text(if (cat == "All") "All Types" else "${cat}s") }
+                    )
+                }
             }
 
             // Location Filter Chips
@@ -124,14 +141,16 @@ fun DiscoverScreen(
             if (refreshing) LinearProgressIndicator(Modifier.fillMaxWidth())
 
             when {
-                list.isEmpty() && refreshing -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                list.isEmpty() && refreshing -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
                 list.isEmpty() -> Column(
                     Modifier.fillMaxSize().padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        error ?: "No scholarships match your current filters.",
+                        error ?: "No opportunities match your current filters.",
                         textAlign = TextAlign.Center
                     )
                     Spacer(Modifier.height(12.dp))
@@ -155,6 +174,10 @@ fun DiscoverScreen(
 private fun ScholarshipCard(s: ScholarshipEntity, onClick: () -> Unit) {
     Card(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                SuggestionChip(onClick = {}, label = { Text(s.category) })
+                Text(deadlineLabel(s.deadline), style = MaterialTheme.typography.labelMedium)
+            }
             Text(s.name, style = MaterialTheme.typography.titleMedium)
             Text(
                 s.provider,
@@ -166,14 +189,11 @@ private fun ScholarshipCard(s: ScholarshipEntity, onClick: () -> Unit) {
                 AssistChip(onClick = {}, label = { Text(s.level) })
                 AssistChip(onClick = {}, label = { Text("Ages ${s.minAge}-${s.maxAge}") })
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    s.amount,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(deadlineLabel(s.deadline), style = MaterialTheme.typography.labelMedium)
-            }
+            Text(
+                s.amount,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }

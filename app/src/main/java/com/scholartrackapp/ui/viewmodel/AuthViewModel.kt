@@ -13,6 +13,9 @@ data class AuthUiState(
     val fullName: String = "",
     val email: String = "",
     val password: String = "",
+    val school: String = "",
+    val course: String = "",
+    val yearOfStudy: String = "",
     val error: String? = null,
     val isLoading: Boolean = false,
     val authenticated: Boolean = false
@@ -30,11 +33,22 @@ class AuthViewModel(private val repo: ScholarshipRepository) : ViewModel() {
     fun onFullNameChange(v: String) = _state.update { it.copy(fullName = v, error = null) }
     fun onEmailChange(v: String) = _state.update { it.copy(email = v, error = null) }
     fun onPasswordChange(v: String) = _state.update { it.copy(password = v, error = null) }
+    fun onSchoolChange(v: String) = _state.update { it.copy(school = v, error = null) }
+    fun onCourseChange(v: String) = _state.update { it.copy(course = v, error = null) }
+    fun onYearChange(v: String) = _state.update { it.copy(yearOfStudy = v, error = null) }
 
     fun submit() {
         val s = _state.value
         if (s.isRegisterMode && s.fullName.isBlank()) {
             _state.update { it.copy(error = "Full name is required") }
+            return
+        }
+        if (s.isRegisterMode && s.school.isBlank()) {
+            _state.update { it.copy(error = "School or University is required") }
+            return
+        }
+        if (s.isRegisterMode && s.course.isBlank()) {
+            _state.update { it.copy(error = "Course or Program is required") }
             return
         }
         if (s.email.isBlank() || !s.email.contains("@")) {
@@ -49,7 +63,7 @@ class AuthViewModel(private val repo: ScholarshipRepository) : ViewModel() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             val result = if (s.isRegisterMode) {
-                repo.register(s.fullName, s.email, s.password)
+                repo.register(s.fullName, s.email, s.password, s.school, s.course, s.yearOfStudy)
             } else {
                 repo.login(s.email, s.password)
             }
@@ -58,10 +72,5 @@ class AuthViewModel(private val repo: ScholarshipRepository) : ViewModel() {
                 onFailure = { e -> _state.update { it.copy(isLoading = false, error = e.message ?: "Authentication failed") } }
             )
         }
-    }
-
-    fun logout() {
-        repo.logout()
-        _state.value = AuthUiState()
     }
 }

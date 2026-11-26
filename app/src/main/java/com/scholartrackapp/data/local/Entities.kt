@@ -12,7 +12,10 @@ data class UserEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val fullName: String,
     val email: String,
-    val password: String
+    val password: String,
+    val school: String = "",
+    val course: String = "",
+    val yearOfStudy: String = ""
 )
 
 @Entity(tableName = "scholarships")
@@ -20,6 +23,7 @@ data class ScholarshipEntity(
     @PrimaryKey val id: Int,
     val name: String,
     val provider: String,
+    val category: String = "Scholarship",
     val description: String,
     val amount: String,
     val deadline: String,
@@ -36,6 +40,10 @@ data class ApplicationEntity(
     val userId: Int = 0,
     val title: String,
     val provider: String,
+    val category: String = "Scholarship",
+    val school: String = "",
+    val course: String = "",
+    val requirements: String = "",
     val deadline: String,
     val status: String,
     val notes: String,
@@ -46,6 +54,6 @@ enum class ApplicationStatus(val label: String) {
     NOT_STARTED("Not started"),
     IN_PROGRESS("In progress"),
     SUBMITTED("Submitted"),
-    AWARDED("Awarded"),
+    AWARDED("Awarded / Accepted"),
     REJECTED("Rejected")
 }

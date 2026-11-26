@@ -1,7 +1,9 @@
 package com.scholartrackapp.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +31,7 @@ fun AuthScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -38,39 +41,71 @@ fun AuthScreen(
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             Text(
-                text = if (state.isRegisterMode) "Create your student account" else "Sign in to track your applications",
+                text = if (state.isRegisterMode)
+                    "Create your student profile for scholarships & attachments"
+                else "Sign in to track scholarships, internships & attachments",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(20.dp))
 
             if (state.isRegisterMode) {
                 OutlinedTextField(
                     value = state.fullName,
                     onValueChange = vm::onFullNameChange,
-                    label = { Text("Full Name") },
+                    label = { Text("Full Name *") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
+
+                OutlinedTextField(
+                    value = state.school,
+                    onValueChange = vm::onSchoolChange,
+                    label = { Text("School / University *") },
+                    placeholder = { Text("e.g. University of Nairobi / JKUAT") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(10.dp))
+
+                OutlinedTextField(
+                    value = state.course,
+                    onValueChange = vm::onCourseChange,
+                    label = { Text("Course / Program *") },
+                    placeholder = { Text("e.g. BSc. Computer Science") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(10.dp))
+
+                OutlinedTextField(
+                    value = state.yearOfStudy,
+                    onValueChange = vm::onYearChange,
+                    label = { Text("Year of Study / Form") },
+                    placeholder = { Text("e.g. Year 3 / Form 4") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(10.dp))
             }
 
             OutlinedTextField(
                 value = state.email,
                 onValueChange = vm::onEmailChange,
-                label = { Text("Email") },
+                label = { Text("Email *") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
 
             OutlinedTextField(
                 value = state.password,
                 onValueChange = vm::onPasswordChange,
-                label = { Text("Password") },
+                label = { Text("Password *") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -78,7 +113,7 @@ fun AuthScreen(
             )
 
             if (state.error != null) {
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
                 Text(
                     text = state.error!!,
                     color = MaterialTheme.colorScheme.error,
@@ -86,7 +121,7 @@ fun AuthScreen(
                 )
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(18.dp))
 
             Button(
                 onClick = vm::submit,
@@ -96,7 +131,7 @@ fun AuthScreen(
                 Text(if (state.isRegisterMode) "Register" else "Login")
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
 
             TextButton(onClick = vm::toggleMode) {
                 Text(

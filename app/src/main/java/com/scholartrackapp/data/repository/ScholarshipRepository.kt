@@ -25,17 +25,30 @@ class ScholarshipRepository(
         if (uid == null) flowOf(emptyList()) else applicationDao.observeByUser(uid)
     }
 
-    suspend fun register(fullName: String, email: String, password: String): Result<UserEntity> = try {
+    suspend fun register(
+        fullName: String,
+        email: String,
+        password: String,
+        school: String = "",
+        course: String = "",
+        yearOfStudy: String = ""
+    ): Result<UserEntity> = try {
         val trimmedEmail = email.trim()
         if (userDao.findByEmail(trimmedEmail) != null) {
             Result.failure(IllegalArgumentException("An account with this email already exists."))
         } else {
-            val id = userDao.insert(
-                UserEntity(fullName = fullName.trim(), email = trimmedEmail, password = password)
-            ).toInt()
+            val user = UserEntity(
+                fullName = fullName.trim(),
+                email = trimmedEmail,
+                password = password,
+                school = school.trim(),
+                course = course.trim(),
+                yearOfStudy = yearOfStudy.trim()
+            )
+            val id = userDao.insert(user).toInt()
             prefs.edit().putInt("user_id", id).apply()
             _currentUserId.value = id
-            Result.success(UserEntity(id = id, fullName = fullName.trim(), email = trimmedEmail, password = password))
+            Result.success(user.copy(id = id))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -98,6 +111,7 @@ private fun ScholarshipDto.toEntity(): ScholarshipEntity? {
         id = id,
         name = name ?: "Untitled",
         provider = provider ?: "Unknown provider",
+        category = category ?: "Scholarship",
         description = description ?: "",
         amount = amount ?: "Not specified",
         deadline = deadline ?: "",
