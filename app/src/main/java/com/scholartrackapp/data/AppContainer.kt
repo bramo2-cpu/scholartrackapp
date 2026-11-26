@@ -32,6 +32,6 @@ class AppContainer(context: Context) {
     )
 
     companion object {
-        const val BASE_URL = "https://raw.githubusercontent.com/bramo2-cpu/scholartrackapp/main/"
+        const val BASE_URL = "https://api.github.com/"
     }
 }
