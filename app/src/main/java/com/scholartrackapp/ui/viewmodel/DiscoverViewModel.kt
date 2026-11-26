@@ -59,7 +59,7 @@ class DiscoverViewModel(private val repo: ScholarshipRepository) : ViewModel() {
     fun onLocationChange(v: String) = _filters.update { it.copy(location = v) }
     fun onAgeChange(v: String) = _filters.update { it.copy(ageInput = v.filter { ch -> ch.isDigit() }.take(2)) }
     fun onLevelChange(v: String) = _filters.update { it.copy(level = v) }
-    fun clearFilters() = _filters.value = DiscoverFilters()
+    fun clearFilters() { _filters.value = DiscoverFilters() }
 
     fun refresh() {
         viewModelScope.launch {

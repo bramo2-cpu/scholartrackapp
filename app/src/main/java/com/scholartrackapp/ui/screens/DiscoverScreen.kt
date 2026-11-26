@@ -124,7 +124,7 @@ fun DiscoverScreen(
             if (refreshing) LinearProgressIndicator(Modifier.fillMaxWidth())
 
             when {
-                list.isEmpty() && refreshing -> LoadingBox()
+                list.isEmpty() && refreshing -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 list.isEmpty() -> Column(
                     Modifier.fillMaxSize().padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
